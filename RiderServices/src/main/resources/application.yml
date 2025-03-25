@@ -2,9 +2,9 @@ spring:
   application:
     name: Driver
   datasource:
-    url: jdbc:postgresql://localhost:5433/driver
-    username: driver
-    password: driver
+    url: jdbc:postgresql://localhost:5434/rider
+    username: rider
+    password: rider
     driver-class-name: org.postgresql.Driver
 server:
-  port: 8080
+  port: 8081
