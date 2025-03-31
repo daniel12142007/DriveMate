@@ -35,4 +35,6 @@ public class Driver {
     private Status status;
 
     private LocalDateTime dateRegistered;
+
+    private LocalDateTime lastOrder;
 }
