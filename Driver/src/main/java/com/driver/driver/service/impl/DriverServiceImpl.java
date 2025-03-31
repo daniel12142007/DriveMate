@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -31,9 +32,23 @@ public class DriverServiceImpl implements DriverService {
                 .status(Status.AVAILABLE)
                 .rating(0)
                 .dateRegistered(LocalDateTime.now())
+                .lastOrder(LocalDateTime.now())
                 .build();
         driverRepository.save(driver);
 
         return driverRepository.findByIdResponse(driver.getId());
+    }
+
+    @Override
+    public DriverResponse findById(long driverId) {
+        DriverResponse response = driverRepository.findByIdResponse(driverId);
+        if (response == null)
+            throw new RuntimeException("Driver not found");
+        return response;
+    }
+
+    @Override
+    public List<DriverResponse> findAllByStatus(Status status) {
+        return driverRepository.findAllByStatus(status);
     }
 }
