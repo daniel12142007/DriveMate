@@ -51,4 +51,13 @@ public class DriverServiceImpl implements DriverService {
     public List<DriverResponse> findAllByStatus(Status status) {
         return driverRepository.findAllByStatus(status);
     }
+
+    @Override
+    public DriverResponse updateStatus(long driverId, Status status) {
+        Driver driver =
+                driverRepository.findById(driverId).orElseThrow(() -> new RuntimeException("Driver not found"));
+        driver.setStatus(status);
+        driverRepository.save(driver);
+        return driverRepository.findByIdResponse(driverId);
+    }
 }
