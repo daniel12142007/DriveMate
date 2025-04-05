@@ -35,4 +35,10 @@ public class DriverController {
     public ResponseEntity<List<DriverResponse>> findAllByStatus(@PathVariable("status") Status status) {
         return ResponseEntity.ok(driverService.findAllByStatus(status));
     }
+
+    @PutMapping("{id}")
+    public ResponseEntity<DriverResponse> updateStatus(@PathVariable Long id, @RequestParam Status status) {
+        DriverResponse response = driverService.updateStatus(id, status);
+        return ResponseEntity.ok(response);
+    }
 }

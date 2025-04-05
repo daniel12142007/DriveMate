@@ -10,13 +10,11 @@ import com.rider.riderservices.repository.OrderRepository;
 import com.rider.riderservices.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +22,7 @@ import java.util.List;
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final RestTemplate restTemplate;
+    private final String driverUrl = "http://localhost:8080/api/v1/driver";
 
     @Override
     public OrderResponse createOrder(OrderRequest request) {
@@ -38,13 +37,30 @@ public class OrderServiceImpl implements OrderService {
         log.info("Поиск свободного водителя");
         DriverResponse[] responses =
                 restTemplate.getForObject(
-                        "http://localhost:8080/api/v1/driver/all/by/" + Status.AVAILABLE,
+                        driverUrl + "/all/by/" + Status.AVAILABLE,
                         DriverResponse[].class);
-        if (responses.length < 1)
+        if (responses == null || responses.length < 1)
             throw new RuntimeException("Not found available drivers");
-        order.setDriverId(responses[0].id());
+        Long driverId = responses[0].id();
+
+        if (driverId == null)
+            throw new RuntimeException("Not found available driver");
+
+        order.setDriverId(driverId);
+
+        DriverResponse response = restTemplate.exchange(
+                driverUrl + "/" + driverId + "?status=" + Status.BUSY,
+                HttpMethod.PUT,
+                null,
+                DriverResponse.class
+        ).getBody();
+
+        if (response == null)
+            throw new RuntimeException("Not success");
+        log.info("Поменяться статус водителя на BUSY с id {}", response.id());
+
         orderRepository.save(order);
+
         return orderRepository.findByIdResponse(order.getId());
     }
-
 }

@@ -12,4 +12,6 @@ public interface DriverService {
     DriverResponse findById(long driverId);
 
     List<DriverResponse> findAllByStatus(Status status);
+
+    DriverResponse updateStatus(long driverId, Status status);
 }
