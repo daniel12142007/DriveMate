@@ -27,4 +27,9 @@ public record DriverResponse(
                           float rating) {
         this(id, name, carNumber, phoneNumber, carModel, status, dateRegister, rating, 0);
     }
+
+    public DriverResponse(Long id, String name, String carNumber,
+                          String phoneNumber, String carModel, Status status) {
+        this(id, name, carNumber, phoneNumber, carModel, status, null, 0, 0);
+    }
 }
