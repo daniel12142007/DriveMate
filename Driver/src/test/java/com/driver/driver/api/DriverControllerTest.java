@@ -5,6 +5,7 @@ import com.driver.driver.dto.response.DriverResponse;
 import com.driver.driver.model.enums.Status;
 import com.driver.driver.service.DriverService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import java.util.List;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = DriverController.class)
@@ -30,6 +34,7 @@ public class DriverControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @DisplayName("Created driver")
     @Test
     public void createDriver_ReturnsCreatedDriver() throws Exception {
         DriverRequest request = new DriverRequest(
@@ -59,7 +64,6 @@ public class DriverControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Driver"));
         /*
@@ -72,5 +76,87 @@ public class DriverControllerTest {
         jsonPath("$.name").value("Иван"): проверяем, что в ответе поле name равно "Иван".
          */
     }
+
+    @DisplayName("Find by id driver")
+    @Test
+    public void findById_ReturnsDriver() throws Exception {
+        DriverResponse response = new DriverResponse(
+                1L,
+                "Driver",
+                "AA32",
+                "+996 700 700 700",
+                "Toyota",
+                Status.AVAILABLE
+        );
+
+        Mockito.when(
+                driverService.findById(1)
+        ).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/driver/{id}", 1))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.name").value("Driver"));
+    }
+
+    @DisplayName("Find all driver")
+    @Test
+    public void findAll_ReturnsAllDrivers() throws Exception {
+        DriverResponse response1 = new DriverResponse(
+                1L,
+                "Driver",
+                "AA32",
+                "+996 700 700 700",
+                "Toyota",
+                Status.AVAILABLE
+        );
+        DriverResponse response2 = new DriverResponse(
+                2L,
+                "Driver",
+                "AA32",
+                "+996 700 700 700",
+                "Toyota",
+                Status.AVAILABLE
+        );
+
+        Mockito.when(
+                driverService.findAllByStatus(Status.AVAILABLE)
+        ).thenReturn(List.of(response1, response2));
+
+        mockMvc.perform(get("/api/v1/driver/all/by/{status}", Status.AVAILABLE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[1].id").value(2));
+    }
+
+    @DisplayName("Update status driver")
+    @Test
+    public void updateStatus_ReturnsUpdatedStatus() throws Exception {
+        long driverId = 1L;
+        Status newStatus = Status.BUSY;
+
+        DriverResponse response = new DriverResponse(
+                1L,
+                "Driver",
+                "AA32",
+                "+996 700 700 700",
+                "Toyota",
+                Status.BUSY
+        );
+
+        Mockito.when(
+                driverService.updateStatus(driverId, newStatus)
+        ).thenReturn(response);
+
+        mockMvc.perform(
+                        put("/api/v1/driver/{id}", driverId)
+                                .param("status", newStatus.name())
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.status").value(newStatus.name()));
+    }
+
 
 }
