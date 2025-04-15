@@ -19,14 +19,4 @@ public class OrderController {
         OrderResponse response = orderService.createOrder(request);
         return ResponseEntity.ok(response);
     }
-
-    @GetMapping
-    public OrderResponse a(){
-        return  new OrderResponse(1L,
-                "address",
-                500,
-                1L,
-                StatusOrder.PROCESS,
-                5);
-    }
 }
