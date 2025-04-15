@@ -7,6 +7,7 @@ import com.driver.driver.model.enums.Status;
 import com.driver.driver.repository.DriverRepository;
 import com.driver.driver.service.DriverService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -59,5 +60,10 @@ public class DriverServiceImpl implements DriverService {
         driver.setStatus(status);
         driverRepository.save(driver);
         return driverRepository.findByIdResponse(driverId);
+    }
+
+    @RabbitListener(queues = "Driver")
+    public void receiveMessage(String message) {
+        System.out.println("Driver получил сообщение: " + message);
     }
 }
