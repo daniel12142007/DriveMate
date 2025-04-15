@@ -2,13 +2,11 @@ package com.rider.riderservices.api;
 
 import com.rider.riderservices.dto.request.OrderRequest;
 import com.rider.riderservices.dto.response.OrderResponse;
+import com.rider.riderservices.model.enums.StatusOrder;
 import com.rider.riderservices.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,5 +18,15 @@ public class OrderController {
     public ResponseEntity<OrderResponse> addOrder(@RequestBody OrderRequest request) {
         OrderResponse response = orderService.createOrder(request);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public OrderResponse a(){
+        return  new OrderResponse(1L,
+                "address",
+                500,
+                1L,
+                StatusOrder.PROCESS,
+                5);
     }
 }
