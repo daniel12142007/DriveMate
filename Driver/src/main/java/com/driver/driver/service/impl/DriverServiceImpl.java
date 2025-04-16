@@ -1,12 +1,17 @@
 package com.driver.driver.service.impl;
 
+import com.driver.driver.dto.request.DriverAssignmentRequest;
 import com.driver.driver.dto.request.DriverRequest;
+import com.driver.driver.dto.response.DriverAssignedResponse;
 import com.driver.driver.dto.response.DriverResponse;
 import com.driver.driver.model.Driver;
 import com.driver.driver.model.enums.Status;
 import com.driver.driver.repository.DriverRepository;
 import com.driver.driver.service.DriverService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,8 +19,10 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DriverServiceImpl implements DriverService {
     private final DriverRepository driverRepository;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     public DriverResponse registerDriver(DriverRequest request) {
@@ -59,5 +66,22 @@ public class DriverServiceImpl implements DriverService {
         driver.setStatus(status);
         driverRepository.save(driver);
         return driverRepository.findByIdResponse(driverId);
+    }
+
+    @RabbitListener(queues = "DriverRequest")
+    public void assignDriverToOrder(DriverAssignmentRequest request) {
+        Long orderId = request.getOrderId();
+
+        List<DriverResponse> drivers = driverRepository.findAllByStatus(Status.AVAILABLE);
+        if (drivers.isEmpty()) {
+            log.warn("Нет доступных водителей для заказа {}", orderId);
+            return;
+        }
+        DriverResponse response = drivers.get(0);
+
+        updateStatus(response.id(), Status.BUSY);
+
+        rabbitTemplate.convertAndSend("DriverAssigned",
+                new DriverAssignedResponse(orderId, response.id()));
     }
 }
