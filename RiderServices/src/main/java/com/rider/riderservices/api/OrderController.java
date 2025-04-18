@@ -2,7 +2,6 @@ package com.rider.riderservices.api;
 
 import com.rider.riderservices.dto.request.OrderRequest;
 import com.rider.riderservices.dto.response.OrderResponse;
-import com.rider.riderservices.model.enums.StatusOrder;
 import com.rider.riderservices.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,5 +17,10 @@ public class OrderController {
     public ResponseEntity<OrderResponse> addOrder(@RequestBody OrderRequest request) {
         OrderResponse response = orderService.createOrder(request);
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("complete/{driverId}")
+    public ResponseEntity<Boolean> updateOrder(@PathVariable Long driverId) {
+        return ResponseEntity.ok(orderService.completedOrder(driverId));
     }
 }

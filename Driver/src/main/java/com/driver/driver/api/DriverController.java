@@ -41,4 +41,9 @@ public class DriverController {
         DriverResponse response = driverService.updateStatus(id, status);
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping("complete/{driverId}")
+    public ResponseEntity<Boolean> complete(@PathVariable Long driverId) {
+        return ResponseEntity.ok(driverService.completedOrder(driverId));
+    }
 }

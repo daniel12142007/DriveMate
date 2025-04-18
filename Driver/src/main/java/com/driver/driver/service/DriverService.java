@@ -14,4 +14,6 @@ public interface DriverService {
     List<DriverResponse> findAllByStatus(Status status);
 
     DriverResponse updateStatus(long driverId, Status status);
+
+    boolean completedOrder(long driverId);
 }
