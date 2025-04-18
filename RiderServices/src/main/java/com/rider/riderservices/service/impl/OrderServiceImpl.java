@@ -15,6 +15,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +40,22 @@ public class OrderServiceImpl implements OrderService {
         rabbitTemplate.convertAndSend("DriverRequest", driverAssignmentRequest);
 
         return orderRepository.findByIdResponse(order.getId());
+    }
+
+    @Override
+    public boolean completedOrder(long driverId) {
+        List<Order> orderList = orderRepository.findByDriverIdAndStatusOrder(
+                driverId,
+                StatusOrder.COMPLETE);
+
+        if (orderList.isEmpty()) return false;
+
+        orderList.forEach(order -> {
+            order.setStatusOrder(StatusOrder.COMPLETE);
+        });
+
+        orderRepository.saveAll(orderList);
+        return true;
     }
 
     @RabbitListener(queues = "DriverAssigned")

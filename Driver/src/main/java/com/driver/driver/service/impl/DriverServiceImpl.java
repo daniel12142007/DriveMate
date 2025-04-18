@@ -12,7 +12,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +26,7 @@ import java.util.List;
 public class DriverServiceImpl implements DriverService {
     private final DriverRepository driverRepository;
     private final RabbitTemplate rabbitTemplate;
+    private final RestTemplate restTemplate;
 
     @Override
     public DriverResponse registerDriver(DriverRequest request) {
@@ -66,6 +70,24 @@ public class DriverServiceImpl implements DriverService {
         driver.setStatus(status);
         driverRepository.save(driver);
         return driverRepository.findByIdResponse(driverId);
+    }
+
+    @Override
+    public boolean completedOrder(long driverId) {
+        Driver driver = driverRepository.findById(driverId).orElseThrow(
+                () -> new RuntimeException("Driver not found"));
+        ResponseEntity<Boolean> successRequest = restTemplate.exchange(
+                "http://Rider/api/v1/order/complete/" + driverId,
+                HttpMethod.PUT,
+                null,
+                Boolean.class);
+        driver.setStatus(Status.AVAILABLE);
+
+        if (Boolean.FALSE.equals(successRequest.getBody()))
+            throw new RuntimeException("Не удалось завершить заказ, у вас нету заказов");
+        driverRepository.save(driver);
+
+        return true;
     }
 
     @RabbitListener(queues = "DriverRequest")
