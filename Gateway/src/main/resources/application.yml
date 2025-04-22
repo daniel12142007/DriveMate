@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: Gateway
+#  cloud:
+#    gateway:
+#        routes:
+#          - id: driver-route
+#            uri: ${DRIVER_ROUTE_URI:http://localhost:8080}
+#            predicates:
+#              - Path=/v1/driver/**
+#            filters:
+#              - PrefixPath=/api
+#              - AddResponseHeader=X-Powered-By, Dance
+server:
+  port: 8082
