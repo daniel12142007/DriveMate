@@ -1,15 +1,31 @@
+server:
+  port: 8082
+
 spring:
   application:
     name: Gateway
-#  cloud:
-#    gateway:
-#        routes:
-#          - id: driver-route
-#            uri: ${DRIVER_ROUTE_URI:http://localhost:8080}
-#            predicates:
-#              - Path=/v1/driver/**
-#            filters:
-#              - PrefixPath=/api
-#              - AddResponseHeader=X-Powered-By, Dance
-server:
-  port: 8082
+
+  cloud:
+    gateway:
+      routes:
+        - id: driver-service
+          uri: http://localhost:8080
+          predicates:
+            - Path=/driver/**, /driver/v3/api-docs
+          filters:
+            - RewritePath=/driver/(?<segment>.*), /$\{segment}
+
+        - id: order-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/order/**, /order/v3/api-docs
+          filters:
+            - RewritePath=/order/(?<segment>.*), /$\{segment}
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: driver
+        url: /driver/v3/api-docs
+      - name: order
+        url: /order/v3/api-docs
